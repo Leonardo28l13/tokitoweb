@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TOKITO BOT • Painel Web</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+  
+  <style>
+    .editor-layout { display: flex; gap: 20px; height: 600px; }
+    .editor-sidebar { width: 250px; background: rgba(0,0,0,0.3); border: 1px solid var(--line); border-radius: 16px; padding: 15px; display: flex; flex-direction: column; }
+    .editor-main { flex: 1; display: flex; flex-direction: column; gap: 15px; min-height: 0; }
+    
+    .ia-box { background: rgba(255, 255, 255, 0.02); border: 1px solid var(--line); padding: 10px 14px; border-radius: 14px; display: flex; gap: 12px; align-items: flex-end; transition: border-color 0.3s ease; }
+    .ia-box:focus-within { border-color: rgba(121, 255, 167, 0.5); }
+    
+    #iaPrompt { flex: 1; background: transparent; border: none; color: #fff; font-family: 'Inter', sans-serif; font-size: 14px; outline: none; resize: none; min-height: 24px; max-height: 120px; line-height: 1.5; padding: 4px 0; overflow-y: auto; }
+    #iaPrompt::placeholder { color: #666; }
+
+    .editor-header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+    .mobile-case-selector { display: none; }
+    
+    @media (max-width: 900px) {
+      .editor-layout { flex-direction: column; height: auto; }
+      .editor-sidebar { display: none !important; }
+      .mobile-case-selector { display: flex; gap: 10px; margin-bottom: 5px; }
+      .mobile-case-selector select { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid var(--line); color: #fff; padding: 12px 16px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 15px; outline: none; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em; }
+      .ia-box { flex-direction: row !important; align-items: flex-end !important; }
+      .ia-box button { width: auto !important; padding: 8px 14px !important; }
+      .editor-header-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .editor-header-row div { width: 100%; display: flex; justify-content: space-between; }
+      #customCodeInput { min-height: 350px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-badge">🧊</div>
+        <div>
+          <div class="brand-top">TOKITO SYSTEM</div>
+          <h1>TOKITO BOT WEB</h1>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <div class="status-head">
+          <span>Status atual</span>
+          <span id="statusDot" class="dot offline"></span>
+        </div>
+        <h2 id="statusText">Offline</h2>
+        <p id="statusSub">A aguardar ligação do WhatsApp.</p>
+      </div>
+
+      <nav class="side-list">
+        <button class="side-link active" data-tab="connect">Ligar</button>
+        <button class="side-link" data-tab="config">Configurações</button>
+        <button class="side-link" data-tab="features">Funções</button>
+        <button class="side-link" data-tab="editor">Editor & IA</button>
+        <button class="side-link" data-tab="logs">Logs</button>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <section class="hero">
+        <div>
+          <div class="hero-top">PAINEL COMPLETO • QR + NÚMERO</div>
+          <h2>Ligue o seu bot no site e gira tudo com visual premium</h2>
+          <p>QR Code em tempo real, código de emparelhamento com número, edição de prefixo, status online, logs e bot pronto para arrancar.</p>
+        </div>
+      </section>
+
+      <section class="tab active" id="tab-connect">
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-title-row">
+              <div><div class="panel-top">Ligação</div><h3>QR Code</h3></div>
+              <button class="btn btn-primary" id="btnQr">Gerar QR</button>
+            </div>
+            <div class="qr-box" id="qrBox"><div class="qr-placeholder">Clique em <b>Gerar QR</b></div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-title-row"><div><div class="panel-top">Emparelhamento</div><h3>Ligar por número</h3></div></div>
+            <label class="field-label">Número com DDI + DDD</label>
+            <div class="inline-form">
+              <input id="phoneNumber" type="text" placeholder="Ex: 5591999999999" />
+              <button class="btn btn-primary" id="btnPair">Gerar código</button>
+            </div>
+            <div class="pair-box" id="pairBox">Nenhum código gerado ainda.</div>
+            <div class="action-row"><button class="btn btn-danger" id="btnClear">Apagar sessão</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-config">
+        <div class="grid two">
+          <div class="panel">
+            <div class="panel-title-row"><div><div class="panel-top">Config</div><h3>Editar bot</h3></div></div>
+            <div class="form-grid">
+              <div><label class="field-label">Nome do bot</label><input id="botName" type="text" /></div>
+              <div><label class="field-label">Nome do dono</label><input id="ownerName" type="text" /></div>
+              <div><label class="field-label">Número do dono</label><input id="ownerNumber" type="text" /></div>
+              <div><label class="field-label">Prefixo</label><input id="prefix" type="text" maxlength="5" /></div>
+            </div>
+            <div class="action-row" style="margin-top: 15px;">
+              <button class="btn btn-primary" id="saveConfig">Guardar config</button>
+            </div>
+          </div>
+          <div class="panel stat-panel">
+            <div class="panel-top">Informações</div><h3>Estado atual</h3>
+            <div class="stats">
+              <div class="stat-item"><span>Utilizador</span><strong id="meInfo">—</strong></div>
+              <div class="stat-item"><span>Prefixo</span><strong id="prefixInfo">—</strong></div>
+              <div class="stat-item"><span>Bot</span><strong id="botInfo">—</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-features">
+        <div class="panel">
+          <div class="panel-top">Funções Personalizadas</div>
+          <h3>Os seus comandos</h3>
+          <p style="color: var(--muted); margin-bottom: 20px; font-size: 14px;">Todos os comandos criados no editor aparecem aqui automaticamente. Use a IA para gerar um resumo de cada um!</p>
+          <div class="feature-grid" id="featuresGrid">
+            <!-- Os cards dos comandos vão ser injetados aqui -->
+          </div>
+        </div>
+      </section>
+
+      <section class="tab" id="tab-editor">
+        <div class="panel" style="display: flex; flex-direction: column;">
+          <div class="panel-title-row" style="margin-bottom: 5px;">
+            <div>
+              <div class="panel-top">Desenvolvimento Ágil</div>
+              <h3>Editor de Cases & IA</h3>
+            </div>
+          </div>
+          <p style="color: var(--muted); margin-bottom: 20px; font-size: 14px;">Selecione um comando para editar. A IA lê o código aberto para modificá-lo.</p>
+          
+          <div class="mobile-case-selector">
+            <select id="mobileCaseSelect">
+              <option value="">Selecione um comando...</option>
+            </select>
+            <button class="btn btn-primary" id="btnNewCaseMobile" style="background: rgba(255,255,255,0.1); color: #fff; padding: 0 18px; font-size: 22px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;">+</button>
+          </div>
+
+          <div class="editor-layout">
+            <div class="editor-sidebar">
+              <h4 style="margin-top:0; margin-bottom: 10px; color:var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Comandos</h4>
+              <ul id="caseList" style="list-style:none; padding:0; margin: 0; display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto;">
+              </ul>
+              <button id="btnNewCase" class="btn btn-primary" style="width: 100%; font-size: 13px; margin-top: 10px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);">+ Novo Comando</button>
+            </div>
+            
+            <div class="editor-main">
+              <div class="editor-header-row">
+                <h3 id="currentCaseTitle" style="margin:0; font-size: 20px; color: #fff;">Selecione um comando...</h3>
+                <div style="display: flex; gap: 10px;">
+                  <button class="btn btn-danger" id="btnDeleteCase" style="display: none; padding: 8px 14px; font-size: 13px;">Excluir</button>
+                  <button class="btn btn-primary" id="btnSaveCustom" style="display: none; padding: 8px 14px; font-size: 13px; background: #fff; color: #000;">Guardar Código</button>
+                </div>
+              </div>
+
+              <!-- CAIXA DA IA: Placeholder atualizado -->
+              <div class="ia-box">
+                <textarea id="iaPrompt" rows="1" placeholder="Peça para a IA (O 'Enter' apenas quebra a linha)"></textarea>
+                <button class="btn btn-primary" id="btnGenerateIA" style="background: var(--success); color: #000; font-weight: bold; border: none; cursor: pointer; padding: 8px 16px; font-size: 13px; border-radius: 10px;">✨ Gerar</button>
+              </div>
+
+              <textarea id="customCodeInput" spellcheck="false" disabled placeholder="Selecione um comando para começar..." style="flex: 1; background: rgba(0,0,0,0.4); color: #79ffa7; font-family: 'JetBrains Mono', 'Courier New', Courier, monospace; font-size: 13px; line-height: 1.6; border: 1px solid var(--line); border-radius: 14px; padding: 20px; resize: none; outline: none; box-shadow: inset 0 4px 20px rgba(0,0,0,0.5);"></textarea>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="tab" id="tab-logs">
+        <div class="panel">
+          <div class="panel-top">Monitorização</div><h3>Logs do bot</h3>
+          <div id="logs" class="log-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
+
+

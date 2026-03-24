@@ -1,0 +1,28 @@
+{
+  "name": "tokito-bot-site",
+  "version": "2.1.0",
+  "description": "fiz essa porra no meme só kkkk",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@whiskeysockets/baileys": "^7.0.0-rc.9",
+    "async-mutex": "^0.5.0",
+    "chalk": "^4.1.2",
+    "colors": "^1.4.0",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "moment-timezone": "^0.6.0",
+    "node-cache": "^5.1.2",
+    "pino": "^9.6.0",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.1"
+  },
+  "engines": {
+    "node": ">=20 <25"
+  }
+}
