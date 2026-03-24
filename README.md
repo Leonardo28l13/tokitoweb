@@ -39,23 +39,7 @@ rm -rf sessions
 
 ## Comandos
 
-- !menu
-- !ping
-- !owner
-- !perfil
-- !nivel
-- !rank
-- !grupo
-- !admins
-- !id
-- !uptime
-- !say texto
-- !marcar texto
-- !hidetag texto
-- !welcome on/off
-- !antilink on/off
-- !setprefix novo
-- !botinfo
+- ainda em desenvolvimento
 
 ## Correções nesta versão
 
